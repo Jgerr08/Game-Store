@@ -1,6 +1,6 @@
 package Usuario;
 
-public class Usuario {
+public abstract class Usuario {
     String id;
     String contraseña;
 
@@ -8,4 +8,7 @@ public class Usuario {
         this.id = id;
         this.contraseña = contraseña;
     }
+
+    abstract void iniciarSesion();
+    abstract void cerrarSesion();
 }
