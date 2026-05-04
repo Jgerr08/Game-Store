@@ -12,6 +12,11 @@ import Juegos.Juego;
 
 public class Inventario {
 
+    public void agregarJuego(Juego juego) {          
+        DBConnection db = new DBConnection();
+        db.insertarJuego(juego);
+    }
+
     public Juego buscarPorId(String id) {
 
         String sql = "SELECT * FROM juegos WHERE id = ?";

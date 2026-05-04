@@ -1,17 +1,23 @@
 
 import Banco.Banco;
 import Banco.Tarjeta;
+import Juegos.Condicion;
+import Juegos.Consola;
+import Juegos.Juego;
 import Menu.Menu;
 import Pago.PagoElectronico;
-import Pago.Transaccion;
+import Usuario.Cliente;
+import Usuario.Tecnico;
+import Usuario.*;
+import Venta.Carrito;
+import Venta.Item;
+import Venta.Venta;
+
 
 public class App {
     public static void main(String[] args) throws Exception {
-        Tarjeta tarjeta = new Tarjeta("4588583844484748", "Jesús", "383", 12, 24, 199);
-        Banco banco = new Banco("Gringotts");
-        banco.agregarTarjeta(tarjeta);
-        PagoElectronico pagoElectronico = new PagoElectronico(200, banco);
-        pagoElectronico.realizarPago();
-        System.out.println(pagoElectronico.getEstado()); 
+
+      Menu menu = new Menu();
+      menu.mostrar();
     }
 }

@@ -21,12 +21,13 @@ public class Banco {
             System.out.println("La tarjeta ya existe.");
             return;
         }
-        if(tarjeta.validarTarjeta() == false){
+        if(!tarjeta.validarTarjeta()){
             System.out.println("Tarjeta inválida.");
+            return;
         }
         tarjetas.add(tarjeta);
     }
-    
+
      public Tarjeta buscarTarjeta(String numero) {
         for (Tarjeta tarjeta : tarjetas) {
             if (tarjeta.getNumero().equals(numero)) {

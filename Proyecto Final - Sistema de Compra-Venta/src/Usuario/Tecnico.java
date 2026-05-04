@@ -6,14 +6,13 @@ public class Tecnico extends Usuario{
         super(id, contraseña);
     }
 
-    @Override
-    void iniciarSesion() {
-       
-    }
+ @Override
+public void iniciarSesion() {
+    System.out.println("Bienvenido técnico " + getId());
+}
 
-    @Override
-    void cerrarSesion() {
-    
-    }
-    
+@Override
+public void cerrarSesion() {
+    System.out.println("Sesion cerrada");
+}
 }

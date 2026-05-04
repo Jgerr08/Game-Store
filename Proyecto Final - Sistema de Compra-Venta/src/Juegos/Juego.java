@@ -36,5 +36,17 @@ public class Juego {
         return condicion;
     }
     
+     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Juego)) return false;
+        Juego j = (Juego) o;
+        return this.id.equals(j.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
     
 }

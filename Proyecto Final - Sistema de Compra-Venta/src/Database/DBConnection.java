@@ -11,15 +11,15 @@ import Juegos.Juego;
 
 public class DBConnection {
         // Configuración de la conexión
-    private static final String USUARIO = ""; // El usuario que creaste
-    private static final String PASSWORD = ""; // Su contraseña
+    private static final String USUARIO = "usuario_java"; // El usuario que creaste
+    private static final String PASSWORD = "1234"; // Su contraseña
 
     // localhost:1433 es la dirección estándar
-    private static final String URL = "jdbc:sqlserver://localhost:1433;"
-            + "databaseName=GameStore;" // El nombre de tu BD
-            + "encrypt=true;"
-            + "trustServerCertificate=true;"; // Para que no falle por el SSL
-    
+    private static final String URL =
+    "jdbc:sqlserver://HP-Danahi\\SQLEXPRESS01:1433;"
+    + "databaseName=GameStore;"
+    + "encrypt=true;"
+    + "trustServerCertificate=true;";
     // Método para obtener la conexión
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL, USUARIO, PASSWORD);

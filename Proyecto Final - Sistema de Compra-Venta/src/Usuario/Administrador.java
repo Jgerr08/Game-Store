@@ -1,5 +1,7 @@
 package Usuario;
 
+import Inventario.Inventario;
+
 public class Administrador extends Usuario{
 
     public Administrador(String id, String contraseña) {
@@ -7,12 +9,15 @@ public class Administrador extends Usuario{
 
     }
 
-    @Override
-    void iniciarSesion() {
-    }
+@Override
+public void iniciarSesion() {
+    System.out.println("Bienvenido administrador " + getId());
+}
 
-    @Override
-    void cerrarSesion() {
-    }
-    
+@Override
+public void cerrarSesion() {
+    System.out.println("Sesión cerrada");
+}
+
+
 }
