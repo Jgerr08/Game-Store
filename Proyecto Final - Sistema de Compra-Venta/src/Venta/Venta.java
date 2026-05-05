@@ -1,27 +1,34 @@
 package Venta;
 
 import Usuario.Cliente;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 
 public class Venta {
-
+    private int idVenta; 
     private Cliente cliente;
-    private Item[] items;
+    private List<Item> items;
     private double total;
-    private Date fecha;
+    private LocalDateTime fecha;
 
-    public Venta(Cliente cliente, Item[] items, double total) {
+    public Venta(Cliente cliente, List<Item> items, double total) {
         this.cliente = cliente;
         this.items = items;
         this.total = total;
-        this.fecha = new Date();
+        this.fecha = LocalDateTime.now();
     }
 
+    public int getIDVenta(){
+        return idVenta;
+    }
     public Cliente getCliente() {
         return cliente;
     }
 
-    public Item[] getItems() {
+    public List<Item> getItems() {
         return items;
     }
 
@@ -29,7 +36,7 @@ public class Venta {
         return total;
     }
 
-    public Date getFecha() {
+    public LocalDateTime getFecha() {
         return fecha;
     }
 
@@ -37,6 +44,7 @@ public class Venta {
         System.out.println("================================");
         System.out.println("         VENTA FINAL           ");
         System.out.println("================================");
+        System.out.println("ID de Venta:"+getIDVenta());
         System.out.println("Cliente: " + cliente.getId());
         System.out.println("Fecha: " + fecha);
         System.out.println("--------------------------------");

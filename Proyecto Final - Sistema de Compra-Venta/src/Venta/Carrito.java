@@ -3,35 +3,39 @@ package Venta;
 import java.util.ArrayList;
 import java.util.List;
 
-import Inventario.Inventario;
 import Juegos.Juego;
 
 public class Carrito {
-    List<Item> items;
+
+    private List<Item> items;
 
     public Carrito() {
         items = new ArrayList<>();
     }
 
     public void agregarJuego(Juego juego) {
+
         for (Item item : items) {
-            if (item.juego.getID().equals(juego.getID())) {
-                item.cantidad++;
+            if (item.getJuego().getID().equals(juego.getID())) {
+                item.incrementarCantidad();
                 return;
             }
         }
+
         items.add(new Item(juego));
     }
 
     public void borrarJuego(Juego juego) {
+
         for (int i = 0; i < items.size(); i++) {
+
             Item item = items.get(i);
 
-            if (item.juego.getID().equals(juego.getID())) {
+            if (item.getJuego().getID().equals(juego.getID())) {
 
-                item.cantidad--;
+                item.decrementarCantidad();
 
-                if (item.cantidad <= 0) {
+                if (item.getCantidad() <= 0) {
                     items.remove(i);
                 }
 
@@ -41,28 +45,29 @@ public class Carrito {
     }
 
     public double calcularTotal() {
+
         double total = 0;
+
         for (Item item : items) {
-            total += item.juego.getPrecio() * item.cantidad;
+            total += item.getJuego().getPrecio() * item.getCantidad();
         }
+
         return total;
     }
 
     public void mostrarCarrito() {
-        double total = 0;
-        for (Item item : items) {
-            double subtotal = item.juego.getPrecio() * item.cantidad;
-            System.out.println(item.juego.getTitulo() + " x" + item.cantidad + " - $" + subtotal);
-            total += subtotal;
-        }
-        System.out.println("----------------------");
-        System.out.printf("%-9s $%.2f%n", "TOTAL:", total);
-    }
 
-    public void reducirStock(Inventario inventario) {
         for (Item item : items) {
-            inventario.reducirStock(item.juego.getID(), item.cantidad);
+
+            System.out.println(
+                item.getJuego().getTitulo() +
+                " x" + item.getCantidad() +
+                " - $" + (item.getJuego().getPrecio() * item.getCantidad())
+            );
         }
+
+        System.out.println("----------------------");
+        System.out.printf("TOTAL: $%.2f%n", calcularTotal());
     }
 
     public void limpiarCarrito() {
@@ -70,8 +75,8 @@ public class Carrito {
     }
 
     public Item[] getItemsArray() {
-    return items.toArray(new Item[0]);
-}
+        return items.toArray(new Item[0]);
+    }
 
     public boolean estaVacio() {
         return items.isEmpty();
