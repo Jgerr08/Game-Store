@@ -1,5 +1,7 @@
 package Menu;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -35,7 +37,21 @@ public class Menu {
 
         do {
 
-            System.out.println(Colores.MORADO + "\n===== GAME STORE =====" + Colores.RESET);
+            System.out.println(
+                    Colores.MORADO
+                            + "___________               ________                          _________ __                        \n"
+                            +
+                            "\\__    ___/___ ______    /  _____/_____    _____   ____    /   _____//  |_  ___________   ____  \n"
+                            +
+                            "  |    | /  _ \\\\____ \\  /   \\  ___\\__  \\  /     \\_/ __ \\   \\_____  \\\\   __\\/  _ \\_  __ \\_/ __ \\ \n"
+                            +
+                            "  |    |(  <_> )  |_> > \\    \\_\\  \\/ __ \\|  Y Y  \\  ___/   /        \\|  | (  <_> )  | \\\\/\\  ___/ \n"
+                            +
+                            "  |____| \\____/|   __/   \\______  (____  /__|_|  /\\___  > /_______  /|__|  \\____/|__|    \\___  >\n"
+                            +
+                            "               |__|             \\/     \\/      \\/     \\/          \\/                         \\/"
+                            +
+                            Colores.RESET);
             System.out.println(Colores.CYAN + "1. Registrar usuario" + Colores.RESET);
             System.out.println(Colores.CYAN + "2. Iniciar sesión" + Colores.RESET);
             System.out.println(Colores.ROSA + "0. Salir" + Colores.RESET);
@@ -162,6 +178,7 @@ public class Menu {
             System.out.println("5. Actualizar stock de juego");
             System.out.println("6. Buscar usuario por ID");
             System.out.println("7. Buscar juego por ID");
+            System.out.println("8. Imprimir reporte");
             System.out.println("0. Cerrar sesión");
 
             System.out.print("Opción: ");
@@ -179,7 +196,7 @@ public class Menu {
                                         usuario.getClass().getSimpleName());
                     }
                 }
-                  case 2 -> {
+                case 2 -> {
                     System.out.println(Colores.CYAN + "\n--- INVENTARIO ---" + Colores.RESET);
 
                     for (Juego juego : inventario.listarJuegos()) {
@@ -190,7 +207,7 @@ public class Menu {
                     }
                 }
 
-                  case 3 -> registrarJuego();
+                case 3 -> registrarJuego();
 
                 case 4 -> {
                     System.out.print("ID usuario a eliminar: ");
@@ -206,7 +223,7 @@ public class Menu {
                     }
                 }
 
-                 case 5 -> {
+                case 5 -> {
                     System.out.print("Ingrese el ID del juego: ");
                     String idJuego = scanner.nextLine();
 
@@ -237,8 +254,6 @@ public class Menu {
                             : "No encontrado");
                 }
 
-              
-
                 case 7 -> {
                     System.out.print("Ingrese el ID del juego: ");
                     String idJuego = scanner.nextLine();
@@ -250,7 +265,9 @@ public class Menu {
                             : "No encontrado");
                 }
 
-                
+                case 8 ->
+                    System.out.println();
+
                 case 0 -> {
                     usuarioActivo.cerrarSesion();
                     System.out.println(Colores.ROSA + "Sesión cerrada" + Colores.RESET);
@@ -271,7 +288,8 @@ public class Menu {
 
             System.out.println(Colores.CYAN + "\n===== CLIENTE =====" + Colores.RESET);
             System.out.println("1. Agregar juego");
-            System.out.println("2. Pagar");
+            System.out.println("2. Borrar juego");
+            System.out.println("3. Pagar");
             System.out.println("0. Salir");
 
             System.out.print("Opción: ");
@@ -289,13 +307,24 @@ public class Menu {
 
                     if (juego != null && juego.getStock() > 0) {
                         carrito.agregarJuego(juego);
-                        System.out.println(Colores.VERDE + "Agregado" + Colores.RESET);
+                        System.out.println(Colores.VERDE + "Agregado al carrito" + Colores.RESET);
                     } else {
                         System.out.println(Colores.ROSA + "No disponible" + Colores.RESET);
                     }
                 }
-
                 case 2 -> {
+                    System.out.print("Ingrese el ID del juego: ");
+                    String id = scanner.nextLine();
+
+                    Juego juego = inventario.buscarPorId(id);
+                    if (juego != null) {
+                        carrito.borrarJuego(juego);
+                        System.out.println(Colores.VERDE + "Juego borrado del carrito" + Colores.RESET);
+                    } else {
+                        System.out.println(Colores.ROSA + "Juego no encontrado" + Colores.RESET);
+                    }
+                }
+                case 3 -> {
                     carrito.mostrarCarrito();
                     pagar(carrito);
                 }
@@ -372,15 +401,99 @@ public class Menu {
 
     private void pagar(Carrito carrito) {
 
-        System.out.println(Colores.VERDE + "Pago realizado " + Colores.RESET);
+        String archivo = "reporte_ventas.txt";
 
-        for (Item item : carrito.getItemsArray()) {
+        String idVenta = java.util.UUID.randomUUID().toString().substring(0, 8);
 
-            inventario.reducirStock(
-                    item.getJuego().getID(),
-                    item.getCantidad());
+        java.time.LocalDateTime ahora = java.time.LocalDateTime.now();
+        java.time.format.DateTimeFormatter formato = java.time.format.DateTimeFormatter
+                .ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        String fecha = ahora.format(formato);
+
+        try (java.io.BufferedWriter escritor = new java.io.BufferedWriter(new java.io.FileWriter(archivo, true))) {
+
+            escritor.write("===== REPORTE DE VENTA =====");
+            escritor.newLine();
+
+            escritor.write("ID Venta: " + idVenta);
+            escritor.newLine();
+
+            escritor.write("Fecha: " + fecha);
+            escritor.newLine();
+
+            escritor.newLine();
+
+            double total = 0;
+
+            for (Item item : carrito.getItemsArray()) {
+
+                double subtotal = item.getCantidad() * item.getJuego().getPrecio();
+                total += subtotal;
+
+                escritor.write(
+                        "Juego: " + item.getJuego().getTitulo() +
+                                " | Cantidad: " + item.getCantidad() +
+                                " | Subtotal: " + subtotal);
+
+                escritor.newLine();
+
+                inventario.reducirStock(
+                        item.getJuego().getID(),
+                        item.getCantidad());
+            }
+
+            escritor.newLine();
+            escritor.write("TOTAL DE VENTA: " + total);
+            escritor.newLine();
+            escritor.write("----------------------------");
+            escritor.newLine();
+            escritor.newLine();
+
+        } catch (Exception e) {
+            System.out.println("Error al guardar venta: " + e.getMessage());
         }
 
         carrito.limpiarCarrito();
+    }
+
+    private void generarReporteDelDia() {
+
+        String archivo = "reporte_ventas.txt";
+
+        java.time.LocalDate hoy = java.time.LocalDate.now();
+
+        System.out.println(Colores.MORADO + "\n===== REPORTE DE VENTAS DEL DÍA =====" + Colores.RESET);
+        System.out.println("Fecha: " + hoy);
+        System.out.println("----------------------------");
+
+        try (java.io.BufferedReader lector = new java.io.BufferedReader(new java.io.FileReader(archivo))) {
+
+            String linea;
+            boolean incluirVenta = false;
+
+            while ((linea = lector.readLine()) != null) {
+
+                if (linea.startsWith("Fecha:")) {
+
+                    String fechaTexto = linea.replace("Fecha:", "").trim();
+
+                    java.time.LocalDate fechaVenta = java.time.LocalDate.parse(fechaTexto.substring(0, 10));
+
+                    incluirVenta = fechaVenta.equals(hoy);
+                }
+
+                if (incluirVenta) {
+                    System.out.println(linea);
+                }
+
+                if (linea.startsWith("----------------------------")) {
+                    incluirVenta = false;
+                }
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error al generar reporte: " + e.getMessage());
+        }
     }
 }

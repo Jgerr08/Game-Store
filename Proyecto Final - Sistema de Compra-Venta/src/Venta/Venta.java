@@ -1,6 +1,7 @@
 package Venta;
 
 import Usuario.Cliente;
+import Util.Colores;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -41,9 +42,9 @@ public class Venta {
     }
 
     public void mostrarVenta() {
-        System.out.println("================================");
-        System.out.println("         VENTA FINAL           ");
-        System.out.println("================================");
+        System.out.println(Colores.MORADO+"================================"+Colores.RESET);
+        System.out.println(Colores.MORADO+"         VENTA FINAL           "+Colores.RESET);
+        System.out.println(Colores.MORADO+"================================"+Colores.RESET);
         System.out.println("ID de Venta:"+getIDVenta());
         System.out.println("Cliente: " + cliente.getId());
         System.out.println("Fecha: " + fecha);
