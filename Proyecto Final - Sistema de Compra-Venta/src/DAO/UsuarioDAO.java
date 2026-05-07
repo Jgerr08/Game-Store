@@ -27,6 +27,28 @@ public class UsuarioDAO {
         }
     }
 
+    public boolean eliminar(String id) {
+
+    String sql = "DELETE FROM Usuarios WHERE id = ?";
+
+    try (Connection conn = DBConnection.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setString(1, id);
+
+        return ps.executeUpdate() > 0;
+
+    } catch (SQLException e) {
+
+        System.err.println(
+                "Error al eliminar usuario: " +
+                e.getMessage()
+        );
+    }
+
+    return false;
+}
+
     public Usuario login(String id, String contraseña) {
 
         String sql = "SELECT * FROM Usuarios WHERE id = ? AND contraseña = ?";
@@ -95,26 +117,30 @@ public class UsuarioDAO {
 
     private Usuario mapUsuario(ResultSet rs) throws SQLException {
 
-        String rol = rs.getString("rol");
+    String rol = rs.getString("rol");
 
-        return switch (rol.toUpperCase()) {
+    switch (rol.toUpperCase()) {
 
-            case "ADMIN" -> new Administrador(
+        case "ADMIN":
+            return new Administrador(
                     rs.getString("id"),
                     rs.getString("contraseña")
             );
 
-            case "TECNICO" -> new Tecnico(
+        case "TECNICO":
+            return new Tecnico(
                     rs.getString("id"),
                     rs.getString("contraseña")
             );
 
-            case "CLIENTE" -> new Cliente(
+        case "CLIENTE":
+            return new Cliente(
                     rs.getString("id"),
                     rs.getString("contraseña")
             );
 
-            default -> null;
-        };
+        default:
+            throw new SQLException("Rol inválido: " + rol);
     }
+}
 }

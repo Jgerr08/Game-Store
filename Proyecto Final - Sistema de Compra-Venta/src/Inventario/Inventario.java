@@ -15,6 +15,9 @@ public class Inventario {
     public void agregarJuego(Juego juego) {
         juegoDAO.insertar(juego);
     }
+    public void eliminarJuego(Juego juego){
+        juegoDAO.eliminar(juego.getID());
+    }
 
     public Juego buscarPorId(String id) {
         return juegoDAO.buscarPorId(id);
@@ -31,5 +34,23 @@ public class Inventario {
     public void aumentarStock(String id, int cantidad) {
         juegoDAO.aumentarStock(id, cantidad);
     }
-  
+    public void modificarPrecio(String id, double nuevoPrecio) {
+        juegoDAO.modificarPrecio(id,nuevoPrecio);
+    }
+
+    public void mostrarInventario() {
+
+        List<Juego> juegos = listarJuegos();
+
+        if (juegos.isEmpty()) {
+
+            System.out.println("No hay juegos registrados");
+            return;
+        }
+
+        for (Juego juego : juegos) {
+
+            System.out.println(juego);
+        }
+    }
 }

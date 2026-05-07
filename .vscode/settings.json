@@ -1,5 +1,6 @@
 {
     "java.project.referencedLibraries": [
-        "lib/**/*.jar"
+        "lib/**/*.jar",
+        "c:\\Users\\hp\\AppData\\Local\\Microsoft\\Windows\\INetCache\\IE\\6L7OSA8Q\\mssql-jdbc-13.4.0.jre11[1].jar"
     ]
 }

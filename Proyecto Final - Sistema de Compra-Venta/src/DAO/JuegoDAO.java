@@ -131,6 +131,25 @@ public class JuegoDAO {
 
         return false;
     }
+    public boolean modificarPrecio(String id, double nuevoPrecio) {
+
+    String sql = "UPDATE Juegos SET precio = ? WHERE id = ?";
+
+    try (Connection conn = DBConnection.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setDouble(1, nuevoPrecio);
+        ps.setString(2, id);
+
+        return ps.executeUpdate() > 0;
+
+    } catch (SQLException e) {
+
+        System.err.println("Error al modificar precio: " + e.getMessage());
+    }
+
+    return false;
+    }
 
     private Juego mapJuego(ResultSet rs) throws SQLException {
 

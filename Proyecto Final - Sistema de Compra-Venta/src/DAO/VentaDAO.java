@@ -65,4 +65,5 @@ public class VentaDAO {
             System.err.println("Error al guardar detalle de venta: " + e.getMessage());
         }
     }
+    
 }

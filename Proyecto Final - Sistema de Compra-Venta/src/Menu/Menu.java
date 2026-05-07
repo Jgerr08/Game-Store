@@ -2,9 +2,18 @@ package Menu;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import com.microsoft.sqlserver.jdbc.SQLServerException;
+
+import DAO.UsuarioDAO;
+import DAO.VentaDAO;
+import Database.DBConnection;
 import Inventario.Inventario;
 import Juegos.Condicion;
 import Juegos.Consola;
@@ -23,12 +32,25 @@ public class Menu {
     private Usuario usuarioActivo;
     private Scanner scanner;
     private Inventario inventario;
+    private UsuarioDAO usuarioDAO;
+    private VentaDAO ventaDAO;
+    private Connection conexion;
 
     public Menu() {
 
         this.listaUsuarios = new ArrayList<>();
         this.scanner = new Scanner(System.in);
         this.inventario = new Inventario();
+        this.usuarioDAO = new UsuarioDAO();
+        this.ventaDAO = new VentaDAO();
+        System.out.println("Conexión exitosa a la BD");
+        try {
+            conexion = DBConnection.getConnection();
+
+        } catch (SQLException e) {
+            System.out.println("Error al conectar con la BD");
+            e.printStackTrace();
+        }
     }
 
     public void mostrarMenu() {
@@ -79,49 +101,101 @@ public class Menu {
         } while (op != 0);
     }
 
+    private void mostrarMenuRol() {
+
+        if (usuarioActivo instanceof Administrador) {
+
+            menuAdministrador();
+
+        } else if (usuarioActivo instanceof Cliente) {
+
+            menuCliente();
+
+        } else if (usuarioActivo instanceof Tecnico) {
+
+            menuTecnico();
+        }
+
+        usuarioActivo = null;
+    }
+
     private void registrarUsuario() {
 
         System.out.println(Colores.MORADO + "\n===== REGISTRO =====" + Colores.RESET);
 
-        System.out.print(Colores.CYAN + "Usuario: " + Colores.RESET);
-        String id = scanner.nextLine();
+        try {
 
-        for (Usuario usuario : listaUsuarios) {
-            if (usuario.getId().equals(id)) {
-                System.out.println(Colores.ROSA + "Ese usuario ya existe" + Colores.RESET);
-                return;
+            System.out.print(Colores.CYAN + "Usuario: " + Colores.RESET);
+            String id = scanner.nextLine();
+
+            System.out.print(Colores.CYAN + "Contraseña: " + Colores.RESET);
+            String password = scanner.nextLine();
+
+            System.out.println(Colores.MORADO + "\nRol:" + Colores.RESET);
+            System.out.println(Colores.VERDE + "1. Cliente" + Colores.RESET);
+            System.out.println(Colores.CYAN + "2. Técnico" + Colores.RESET);
+
+            System.out.print(Colores.CYAN + "Seleccione opción: " + Colores.RESET);
+
+            int op = Integer.parseInt(scanner.nextLine());
+
+            String rol;
+
+            switch (op) {
+
+                case 1 -> rol = "CLIENTE";
+
+                case 2 -> rol = "TECNICO";
+
+                default -> {
+                    System.out.println(Colores.ROSA + "Rol inválido" + Colores.RESET);
+                    return;
+                }
             }
-        }
 
-        System.out.print(Colores.CYAN + "Contraseña: " + Colores.RESET);
-        String contraseña = scanner.nextLine();
+            String sql = """
+                    INSERT INTO usuarios(id, contraseña, rol)
+                    VALUES (?, ?, ?)
+                    """;
 
-        System.out.println(Colores.MORADO + "\nRol:" + Colores.RESET);
-        System.out.println(Colores.VERDE + "1. Cliente" + Colores.RESET);
-        System.out.println(Colores.CYAN + "2. Técnico" + Colores.RESET);
+            PreparedStatement ps = conexion.prepareStatement(sql);
 
-        System.out.print(Colores.CYAN + "Seleccione opción: " + Colores.RESET);
-        int op = scanner.nextInt();
-        scanner.nextLine();
+            ps.setString(1, id);
+            ps.setString(2, password);
+            ps.setString(3, rol);
 
-        Usuario nuevoUsuario;
+            ps.executeUpdate();
 
-        switch (op) {
+            System.out.println(Colores.VERDE +
+                    " Usuario registrado correctamente" +
+                    Colores.RESET);
 
-            case 1 -> nuevoUsuario = new Cliente(id, contraseña);
+        } catch (SQLServerException e) {
 
-            case 2 -> nuevoUsuario = new Tecnico(id, contraseña);
+            if (e.getMessage().contains("PRIMARY KEY") ||
+                    e.getMessage().contains("UNIQUE")) {
 
-            default -> {
-                System.out.println(Colores.ROSA + "Rol inválido" + Colores.RESET);
-                return;
+                System.out.println(Colores.ROSA +
+                        "Ese usuario ya existe" +
+                        Colores.RESET);
+
+            } else {
+
+                System.out.println(Colores.ROSA +
+                        "Error SQL" +
+                        Colores.RESET);
+
+                e.printStackTrace();
             }
+
+        } catch (Exception e) {
+
+            System.out.println(Colores.ROSA +
+                    "Error al registrar usuario" +
+                    Colores.RESET);
+
+            e.printStackTrace();
         }
-
-        listaUsuarios.add(nuevoUsuario);
-
-        System.out.println(Colores.VERDE + " Registrado como: " +
-                nuevoUsuario.getClass().getSimpleName() + Colores.RESET);
     }
 
     private void iniciarSesion() {
@@ -134,149 +208,25 @@ public class Menu {
         System.out.print(Colores.CYAN + "Contraseña: " + Colores.RESET);
         String contraseña = scanner.nextLine();
 
-        for (Usuario usuario : listaUsuarios) {
 
-            if (usuario.getId().equals(id) &&
-                    usuario.getContraseña().equals(contraseña)) {
+        Usuario usuario = usuarioDAO.login(id, contraseña);
 
-                usuarioActivo = usuario;
+        if (usuario != null) {
 
-                System.out.println(Colores.VERDE + " Sesión iniciada" + Colores.RESET);
+            usuarioActivo = usuario;
 
-                usuario.iniciarSesion();
-                return;
-            }
+            System.out.println(Colores.VERDE +
+                    " Sesión iniciada" +
+                    Colores.RESET);
+
+            mostrarMenuRol();
+
+        } else {
+
+            System.out.println(Colores.ROSA +
+                    "Credenciales incorrectas" +
+                    Colores.RESET);
         }
-
-        System.out.println(Colores.ROSA + "Credenciales incorrectas" + Colores.RESET);
-    }
-
-    private void mostrarMenuRol() {
-
-        if (usuarioActivo instanceof Administrador) {
-            menuAdministrador();
-        } else if (usuarioActivo instanceof Cliente) {
-            menuCliente();
-        } else if (usuarioActivo instanceof Tecnico) {
-            menuTecnico();
-        }
-
-        usuarioActivo = null;
-    }
-
-    private void menuAdministrador() {
-
-        int op;
-
-        do {
-
-            System.out.println(Colores.MORADO + "\n===== PANEL ADMINISTRADOR =====" + Colores.RESET);
-            System.out.println("1. Ver usuarios");
-            System.out.println("2. Ver inventario completo");
-            System.out.println("3. Registrar juego");
-            System.out.println("4. Eliminar usuario");
-            System.out.println("5. Actualizar stock de juego");
-            System.out.println("6. Buscar usuario por ID");
-            System.out.println("7. Buscar juego por ID");
-            System.out.println("8. Imprimir reporte");
-            System.out.println("0. Cerrar sesión");
-
-            System.out.print("Opción: ");
-            op = scanner.nextInt();
-            scanner.nextLine();
-
-            switch (op) {
-
-                case 1 -> {
-                    System.out.println(Colores.CYAN + "\n--- USUARIOS ---" + Colores.RESET);
-
-                    for (Usuario usuario : listaUsuarios) {
-                        System.out.println(
-                                usuario.getId() + " - " +
-                                        usuario.getClass().getSimpleName());
-                    }
-                }
-                case 2 -> {
-                    System.out.println(Colores.CYAN + "\n--- INVENTARIO ---" + Colores.RESET);
-
-                    for (Juego juego : inventario.listarJuegos()) {
-                        System.out.println(
-                                juego.getTitulo() +
-                                        " | Stock: " + juego.getStock() +
-                                        " | Precio: " + juego.getPrecio());
-                    }
-                }
-
-                case 3 -> registrarJuego();
-
-                case 4 -> {
-                    System.out.print("ID usuario a eliminar: ");
-                    String idUsuario = scanner.nextLine();
-
-                    boolean eliminado = listaUsuarios.removeIf(
-                            usuario -> usuario.getId().equals(idUsuario));
-
-                    if (eliminado) {
-                        System.out.println(Colores.VERDE + "Usuario eliminado" + Colores.RESET);
-                    } else {
-                        System.out.println(Colores.ROSA + "Usuario no encontrado" + Colores.RESET);
-                    }
-                }
-
-                case 5 -> {
-                    System.out.print("Ingrese el ID del juego: ");
-                    String idJuego = scanner.nextLine();
-
-                    System.out.print("Nuevo stock: ");
-                    int nuevoStock = scanner.nextInt();
-                    scanner.nextLine();
-
-                    inventario.aumentarStock(idJuego, nuevoStock);
-
-                    System.out.println(Colores.VERDE + "Stock actualizado" + Colores.RESET);
-                }
-
-                case 6 -> {
-                    System.out.print("Ingrese el ID del usuario: ");
-                    String idUsuario = scanner.nextLine();
-
-                    Usuario usuarioEncontrado = null;
-
-                    for (Usuario usuario : listaUsuarios) {
-                        if (usuario.getId().equals(idUsuario)) {
-                            usuarioEncontrado = usuario;
-                            break;
-                        }
-                    }
-
-                    System.out.println(usuarioEncontrado != null
-                            ? usuarioEncontrado.getId() + " - " + usuarioEncontrado.getClass().getSimpleName()
-                            : "No encontrado");
-                }
-
-                case 7 -> {
-                    System.out.print("Ingrese el ID del juego: ");
-                    String idJuego = scanner.nextLine();
-
-                    Juego juego = inventario.buscarPorId(idJuego);
-
-                    System.out.println(juego != null
-                            ? juego.getTitulo() + " | Stock: " + juego.getStock()
-                            : "No encontrado");
-                }
-
-                case 8 ->
-                    System.out.println();
-
-                case 0 -> {
-                    usuarioActivo.cerrarSesion();
-                    System.out.println(Colores.ROSA + "Sesión cerrada" + Colores.RESET);
-                }
-
-                default -> System.out.println(Colores.ROSA + "Opción inválida" + Colores.RESET);
-            }
-
-        } while (op != 0);
     }
 
     private void menuCliente() {
@@ -287,9 +237,10 @@ public class Menu {
         do {
 
             System.out.println(Colores.CYAN + "\n===== CLIENTE =====" + Colores.RESET);
-            System.out.println("1. Agregar juego");
-            System.out.println("2. Borrar juego");
-            System.out.println("3. Pagar");
+            System.out.println("1. Agregar juego del carrito");
+            System.out.println("2. Borrar juego del carrito");
+            System.out.println("3. Mostrar carrito");
+            System.out.println("4. Pagar");
             System.out.println("0. Salir");
 
             System.out.print("Opción: ");
@@ -372,6 +323,272 @@ public class Menu {
                 }
 
                 case 0 -> usuarioActivo.cerrarSesion();
+            }
+
+        } while (op != 0);
+    }
+
+    private void menuAdministrador() {
+
+        int op;
+
+        do {
+
+            System.out.println(Colores.MORADO +
+                    "\n========== ADMINISTRADOR ==========" +
+                    Colores.RESET);
+
+            System.out.println(Colores.VERDE + "1. Registrar juego" + Colores.RESET);
+            System.out.println(Colores.VERDE + "2. Ver inventario" + Colores.RESET);
+            System.out.println(Colores.VERDE + "3. Buscar juego" + Colores.RESET);
+            System.out.println(Colores.VERDE + "4. Eliminar juego" + Colores.RESET);
+            System.out.println(Colores.VERDE + "5. Aumentar stock" + Colores.RESET);
+            System.out.println(Colores.VERDE + "6. Reducir stock" + Colores.RESET);
+            System.out.println(Colores.VERDE + "7. Modificar precio" + Colores.RESET);
+            System.out.println(Colores.VERDE + "8. Ver usuarios" + Colores.RESET);
+            System.out.println(Colores.VERDE + "9. Eliminar usuario" + Colores.RESET);
+            System.out.println(Colores.VERDE + "10. Ver ventas" + Colores.RESET);
+            System.out.println(Colores.ROSA + "0. Cerrar sesión" + Colores.RESET);
+
+            System.out.print(Colores.CYAN +
+                    "Seleccione opción: " +
+                    Colores.RESET);
+
+            try {
+
+                op = Integer.parseInt(scanner.nextLine());
+
+                switch (op) {
+
+                    case 1 -> {
+
+                        System.out.println(
+                                Colores.VERDE +
+                                        "\n=== REGISTRAR JUEGO ===" +
+                                        Colores.RESET);
+
+                        registrarJuego();
+                    }
+
+                    case 2 -> {
+
+                        System.out.println(
+                                Colores.CYAN +
+                                        "\n=== LISTA DE JUEGOS ===" +
+                                        Colores.RESET);
+
+                        inventario.listarJuegos();
+                    }
+
+                    case 3 -> {
+
+                        System.out.println(
+                                Colores.MORADO +
+                                        "\n=== INVENTARIO COMPLETO ===" +
+                                        Colores.RESET);
+
+                        inventario.mostrarInventario();
+                    }
+
+                    case 4 -> {
+
+                        System.out.println(
+                                Colores.ROSA +
+                                        "\n=== ELIMINAR JUEGO ===" +
+                                        Colores.RESET);
+
+                        System.out.print(
+                                Colores.CYAN +
+                                        "ID del juego: " +
+                                        Colores.RESET);
+
+                        String id = scanner.nextLine();
+
+                        Juego juego = inventario.buscarPorId(id);
+
+                        if (juego != null) {
+
+                            inventario.eliminarJuego(juego);
+
+                            System.out.println(
+                                    Colores.VERDE +
+                                            "Juego eliminado correctamente" +
+                                            Colores.RESET);
+
+                        } else {
+
+                            System.out.println(
+                                    Colores.ROSA +
+                                            "Juego no encontrado" +
+                                            Colores.RESET);
+                        }
+                    }
+
+                    case 5 -> {
+
+                        System.out.println(
+                                Colores.VERDE +
+                                        "\n=== AUMENTAR STOCK ===" +
+                                        Colores.RESET);
+
+                        System.out.print(
+                                Colores.CYAN +
+                                        "ID del juego: " +
+                                        Colores.RESET);
+
+                        String id = scanner.nextLine();
+
+                        System.out.print(
+                                Colores.CYAN +
+                                        "Cantidad a agregar: " +
+                                        Colores.RESET);
+
+                        int cantidad = Integer.parseInt(scanner.nextLine());
+
+                        inventario.aumentarStock(id,cantidad);
+
+                            System.out.println(
+                                    Colores.VERDE +
+                                            "Stock actualizado correctamente" +
+                                            Colores.RESET);
+
+                       
+                    }
+
+                    case 6 -> {
+
+                        System.out.println(
+                                Colores.ROSA +
+                                        "\n=== REDUCIR STOCK ===" +
+                                        Colores.RESET);
+
+                        System.out.print(
+                                Colores.CYAN +
+                                        "ID del juego: " +
+                                        Colores.RESET);
+
+                        String id = scanner.nextLine();
+
+                        System.out.print(
+                                Colores.CYAN +
+                                        "Cantidad a reducir: " +
+                                        Colores.RESET);
+
+                        int cantidad = Integer.parseInt(scanner.nextLine());
+
+                        inventario.modificarPrecio(id, cantidad);
+
+                        System.out.println(
+                                Colores.VERDE +
+                                        "Precio actualizado correctamente" +
+                                        Colores.RESET);
+
+                    }
+
+                    case 7 -> {
+
+                        System.out.println(
+                                Colores.CYAN +
+                                        "\n=== MODIFICAR PRECIO ===" +
+                                        Colores.RESET);
+
+                        System.out.print(
+                                Colores.CYAN +
+                                        "ID del juego: " +
+                                        Colores.RESET);
+
+                        String id = scanner.nextLine();
+
+                        System.out.print(
+                                Colores.CYAN +
+                                        "Nuevo precio: " +
+                                        Colores.RESET);
+
+                        double nuevoPrecio = Double.parseDouble(scanner.nextLine());
+
+                        inventario.modificarPrecio(id, nuevoPrecio);
+
+                        System.out.println(
+                                Colores.VERDE +
+                                        "Precio actualizado correctamente" +
+                                        Colores.RESET);
+
+                    }
+
+                    case 8 -> {
+
+                        System.out.println(
+                                Colores.MORADO +
+                                        "\n=== LISTA DE USUARIOS ===" +
+                                        Colores.RESET);
+
+                        inventario.listarJuegos();
+                    }
+
+                    case 9 -> {
+
+                        System.out.println(
+                                Colores.ROSA +
+                                        "\n=== ELIMINAR USUARIO ===" +
+                                        Colores.RESET);
+
+                        System.out.print(
+                                Colores.CYAN +
+                                        "ID del usuario: " +
+                                        Colores.RESET);
+
+                        String id = scanner.nextLine();
+
+                        Usuario usuario = usuarioDAO.buscarPorId(id);
+
+                        if (usuario != null) {
+
+                            usuarioDAO.eliminar(usuario.getId());
+
+                            System.out.println(
+                                    Colores.VERDE +
+                                            "Usuario eliminado correctamente" +
+                                            Colores.RESET);
+
+                        } else {
+
+                            System.out.println(
+                                    Colores.ROSA +
+                                            "Usuario no encontrado" +
+                                            Colores.RESET);
+                        }
+                    }
+
+                    case 10 -> {
+
+                        System.out.println(
+                                Colores.VERDE +
+                                        "\n=== HISTORIAL DE VENTAS ===" +
+                                        Colores.RESET);
+                        mostrarVentas();
+                    }
+
+                    case 0 -> {System.out.println(
+                            Colores.ROSA +
+                                    "Cerrando sesión..." +
+                                    Colores.RESET);
+                    usuarioActivo.cerrarSesion();
+                    }
+
+                    default -> System.out.println(
+                            Colores.ROSA +
+                                    "Opción inválida" +
+                                    Colores.RESET);
+                }
+
+            } catch (NumberFormatException e) {
+
+                System.out.println(
+                        Colores.ROSA +
+                                "Ingrese un número válido" +
+                                Colores.RESET);
+
+                op = -1;
             }
 
         } while (op != 0);
@@ -496,4 +713,68 @@ public class Menu {
             System.out.println("Error al generar reporte: " + e.getMessage());
         }
     }
+    private void mostrarVentas() {
+
+    System.out.println(
+            Colores.MORADO +
+            "\n========== HISTORIAL DE VENTAS ==========" +
+            Colores.RESET
+    );
+
+    String sql = """
+            SELECT 
+                v.idVenta,
+                v.fecha,
+                v.idCliente,
+                dv.idJuego,
+                dv.cantidad,
+                dv.precio
+            FROM Ventas v
+            INNER JOIN DetalleVenta dv
+                ON v.idVenta = dv.idVenta
+            ORDER BY v.fecha DESC
+            """;
+
+    try (Connection conn = DBConnection.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+
+        boolean hayVentas = false;
+
+        while (rs.next()) {
+
+            hayVentas = true;
+
+            System.out.println(
+                    Colores.CYAN +
+                    "\nID Venta: " + rs.getInt("idVenta") +
+                    "\nCliente: " + rs.getString("idCliente") +
+                    "\nJuego: " + rs.getString("idJuego") +
+                    "\nCantidad: " + rs.getInt("cantidad") +
+                    "\nSubtotal: $" + rs.getDouble("precio") +
+                    "\nFecha: " + rs.getTimestamp("fecha") +
+                    "\n-----------------------------------" +
+                    Colores.RESET
+            );
+        }
+
+        if (!hayVentas) {
+
+            System.out.println(
+                    Colores.ROSA +
+                    "No hay ventas registradas" +
+                    Colores.RESET
+            );
+        }
+
+    } catch (SQLException e) {
+
+        System.out.println(
+                Colores.ROSA +
+                "Error al mostrar ventas: " +
+                e.getMessage() +
+                Colores.RESET
+        );
+    }
+}
 }

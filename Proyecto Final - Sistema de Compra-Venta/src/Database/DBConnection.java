@@ -16,7 +16,7 @@ public class DBConnection {
 
     // localhost:1433 es la dirección estándar
     private static final String URL =
-    "jdbc:sqlserver://HP-Danahi\\SQLEXPRESS01:1433;"
+    "jdbc:sqlserver://localhost:1433;"
     + "databaseName=GameStore;"
     + "encrypt=true;"
     + "trustServerCertificate=true;";
