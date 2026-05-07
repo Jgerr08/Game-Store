@@ -50,7 +50,11 @@ public class Inventario {
 
         for (Juego juego : juegos) {
 
-            System.out.println(juego);
-        }
+            System.out.println(
+                "ID: " + juego.getID() +
+                " | " + juego.getTitulo() +
+                " | $" + juego.getPrecio() +
+                " | Stock: " + juego.getStock()
+            );        }
     }
 }

@@ -74,8 +74,8 @@ public class Carrito {
         items.clear();
     }
 
-    public Item[] getItemsArray() {
-        return items.toArray(new Item[0]);
+    public List<Item> getItemsArray() {
+        return items;
     }
 
     public boolean estaVacio() {

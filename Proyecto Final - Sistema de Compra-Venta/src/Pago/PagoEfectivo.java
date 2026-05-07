@@ -1,51 +1,47 @@
 package Pago;
+
 import java.util.Scanner;
-public class PagoEfectivo extends Transaccion{
-    
-//Atributos
+
+public class PagoEfectivo extends Transaccion {
+
     private double montoPagado;
     private double cambio;
 
-//Metodos
-public PagoEfectivo (double monto) {
-    super(monto);
-
-}
-
-public void realizarPago(){
-    Scanner scanner = new Scanner(System.in);
-
-    System.out.println("Pago en Efectivo");
-    System.out.println("\nTotal a pagar:" + monto);
-
-    double pagado = 0;
-    if(pagado < monto){
-        System.out.println("Ingresar el monto entregado:");
-        pagado = scanner.nextDouble();
-
-    if (pagado < monto){
-        System.out.println("El monto es insuficiente. Hace falta una cantidad de: " + (monto -= pagado));
-        this.estado = Estado.RECHAZADO;
-        return;
-        
-    }
-    }
-    
-    this.montoPagado = pagado;
-    this.cambio = montoPagado - monto;
-    this.estado = Estado.EXITOSO;
-
-    System.out.println("Pago realizado de manera exitosa");
-    System.out.println("Cambio: " + cambio);
-
+    public PagoEfectivo(double monto) {
+        super(monto);
     }
 
-    public double getMontoPagado(){
+    @Override
+    public void realizarPago() {
+
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("\n=== PAGO EN EFECTIVO ===");
+        System.out.println("Total a pagar: $" + getMonto());
+
+        System.out.print("Dinero recibido: ");
+        double pagado = scanner.nextDouble();
+
+        if (pagado < getMonto()) {
+
+            System.out.println("Monto insuficiente");
+            this.estado = Estado.RECHAZADO;
+            return;
+        }
+
+        this.montoPagado = pagado;
+        this.cambio = pagado - getMonto();
+        this.estado = Estado.EXITOSO;
+
+        System.out.println("Pago exitoso");
+        System.out.println("Cambio: $" + cambio);
+    }
+
+    public double getMontoPagado() {
         return montoPagado;
     }
-    public double getCambio(){
+
+    public double getCambio() {
         return cambio;
     }
-
-
 }

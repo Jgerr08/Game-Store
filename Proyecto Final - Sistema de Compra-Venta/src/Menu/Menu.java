@@ -7,10 +7,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 import com.microsoft.sqlserver.jdbc.SQLServerException;
 
+import Banco.Tarjeta;
 import DAO.UsuarioDAO;
 import DAO.VentaDAO;
 import Database.DBConnection;
@@ -18,6 +20,8 @@ import Inventario.Inventario;
 import Juegos.Condicion;
 import Juegos.Consola;
 import Juegos.Juego;
+import Reportes.reporteDia;
+import Reportes.reporteVenta;
 import Usuario.Administrador;
 import Usuario.Cliente;
 import Usuario.Tecnico;
@@ -25,6 +29,7 @@ import Usuario.Usuario;
 import Util.Colores;
 import Venta.Carrito;
 import Venta.Item;
+import Venta.Venta;
 
 public class Menu {
 
@@ -35,6 +40,8 @@ public class Menu {
     private UsuarioDAO usuarioDAO;
     private VentaDAO ventaDAO;
     private Connection conexion;
+    reporteDia reporteDia;
+    reporteVenta reporteVenta;
 
     public Menu() {
 
@@ -43,6 +50,8 @@ public class Menu {
         this.inventario = new Inventario();
         this.usuarioDAO = new UsuarioDAO();
         this.ventaDAO = new VentaDAO();
+        this.reporteDia = new reporteDia();
+        this.reporteVenta = new reporteVenta();
         System.out.println("Conexión exitosa a la BD");
         try {
             conexion = DBConnection.getConnection();
@@ -208,7 +217,6 @@ public class Menu {
         System.out.print(Colores.CYAN + "Contraseña: " + Colores.RESET);
         String contraseña = scanner.nextLine();
 
-
         Usuario usuario = usuarioDAO.login(id, contraseña);
 
         if (usuario != null) {
@@ -237,7 +245,7 @@ public class Menu {
         do {
 
             System.out.println(Colores.CYAN + "\n===== CLIENTE =====" + Colores.RESET);
-            System.out.println("1. Agregar juego del carrito");
+            System.out.println("1. Agregar juego al carrito");
             System.out.println("2. Borrar juego del carrito");
             System.out.println("3. Mostrar carrito");
             System.out.println("4. Pagar");
@@ -277,10 +285,14 @@ public class Menu {
                 }
                 case 3 -> {
                     carrito.mostrarCarrito();
+                }
+                case 4 -> {
                     pagar(carrito);
                 }
 
                 case 0 -> usuarioActivo.cerrarSesion();
+
+                default -> System.out.println(Colores.ROSA + "Opción inválida" + Colores.RESET);
             }
 
         } while (op != 0);
@@ -323,6 +335,8 @@ public class Menu {
                 }
 
                 case 0 -> usuarioActivo.cerrarSesion();
+
+                default -> System.out.println(Colores.ROSA + "Opción inválida" + Colores.RESET);
             }
 
         } while (op != 0);
@@ -374,20 +388,21 @@ public class Menu {
 
                         System.out.println(
                                 Colores.CYAN +
-                                        "\n=== LISTA DE JUEGOS ===" +
-                                        Colores.RESET);
-
-                        inventario.listarJuegos();
-                    }
-
-                    case 3 -> {
-
-                        System.out.println(
-                                Colores.MORADO +
                                         "\n=== INVENTARIO COMPLETO ===" +
                                         Colores.RESET);
 
                         inventario.mostrarInventario();
+                    }
+
+                    case 3 -> {
+
+                        System.out.print("ID: ");
+                        String id = scanner.nextLine();
+
+                        Juego juego = inventario.buscarPorId(id);
+
+                        System.out.println(juego != null ? juego.getTitulo() : "No encontrado");
+
                     }
 
                     case 4 -> {
@@ -445,14 +460,13 @@ public class Menu {
 
                         int cantidad = Integer.parseInt(scanner.nextLine());
 
-                        inventario.aumentarStock(id,cantidad);
+                        inventario.aumentarStock(id, cantidad);
 
-                            System.out.println(
-                                    Colores.VERDE +
-                                            "Stock actualizado correctamente" +
-                                            Colores.RESET);
+                        System.out.println(
+                                Colores.VERDE +
+                                        "Stock actualizado correctamente" +
+                                        Colores.RESET);
 
-                       
                     }
 
                     case 6 -> {
@@ -462,26 +476,15 @@ public class Menu {
                                         "\n=== REDUCIR STOCK ===" +
                                         Colores.RESET);
 
-                        System.out.print(
-                                Colores.CYAN +
-                                        "ID del juego: " +
-                                        Colores.RESET);
-
+                        System.out.print("ID del juego: ");
                         String id = scanner.nextLine();
 
-                        System.out.print(
-                                Colores.CYAN +
-                                        "Cantidad a reducir: " +
-                                        Colores.RESET);
-
+                        System.out.print("Cantidad a reducir: ");
                         int cantidad = Integer.parseInt(scanner.nextLine());
 
-                        inventario.modificarPrecio(id, cantidad);
+                        inventario.reducirStock(id, cantidad);
 
-                        System.out.println(
-                                Colores.VERDE +
-                                        "Precio actualizado correctamente" +
-                                        Colores.RESET);
+                        System.out.println("Stock reducido correctamente");
 
                     }
 
@@ -522,7 +525,16 @@ public class Menu {
                                         "\n=== LISTA DE USUARIOS ===" +
                                         Colores.RESET);
 
-                        inventario.listarJuegos();
+                        List<Usuario> usuarios = usuarioDAO.listar();
+
+                        if (usuarios.isEmpty()) {
+                            System.out.println("No hay usuarios");
+                            return;
+                        }
+
+                        for (Usuario u : usuarios) {
+                            System.out.println("ID: " + u.getId());
+                        }
                     }
 
                     case 9 -> {
@@ -565,14 +577,15 @@ public class Menu {
                                 Colores.VERDE +
                                         "\n=== HISTORIAL DE VENTAS ===" +
                                         Colores.RESET);
-                        mostrarVentas();
+                        ventaDAO.mostrarVentas();
                     }
 
-                    case 0 -> {System.out.println(
-                            Colores.ROSA +
-                                    "Cerrando sesión..." +
-                                    Colores.RESET);
-                    usuarioActivo.cerrarSesion();
+                    case 0 -> {
+                        System.out.println(
+                                Colores.ROSA +
+                                        "Cerrando sesión..." +
+                                        Colores.RESET);
+                        usuarioActivo.cerrarSesion();
                     }
 
                     default -> System.out.println(
@@ -618,163 +631,87 @@ public class Menu {
 
     private void pagar(Carrito carrito) {
 
-        String archivo = "reporte_ventas.txt";
+        if (carrito.getItemsArray().isEmpty()) {
 
-        String idVenta = java.util.UUID.randomUUID().toString().substring(0, 8);
+            System.out.println("Carrito vacío");
+            return;
+        }
 
-        java.time.LocalDateTime ahora = java.time.LocalDateTime.now();
-        java.time.format.DateTimeFormatter formato = java.time.format.DateTimeFormatter
-                .ofPattern("yyyy-MM-dd HH:mm:ss");
+        System.out.println(Colores.CYAN + "\n===== PAGO =====" + Colores.RESET);
 
-        String fecha = ahora.format(formato);
+        System.out.print("Número de tarjeta: ");
+        String numero = scanner.nextLine();
 
-        try (java.io.BufferedWriter escritor = new java.io.BufferedWriter(new java.io.FileWriter(archivo, true))) {
+        System.out.print("Titular: ");
+        String titular = scanner.nextLine();
 
-            escritor.write("===== REPORTE DE VENTA =====");
-            escritor.newLine();
+        System.out.print("CVV: ");
+        String cvv = scanner.nextLine();
 
-            escritor.write("ID Venta: " + idVenta);
-            escritor.newLine();
+        System.out.print("Mes expiración: ");
+        int mes = Integer.parseInt(scanner.nextLine());
 
-            escritor.write("Fecha: " + fecha);
-            escritor.newLine();
+        System.out.print("Año expiración: ");
+        int año = Integer.parseInt(scanner.nextLine());
 
-            escritor.newLine();
+        Tarjeta tarjeta;
 
-            double total = 0;
+        try {
 
-            for (Item item : carrito.getItemsArray()) {
-
-                double subtotal = item.getCantidad() * item.getJuego().getPrecio();
-                total += subtotal;
-
-                escritor.write(
-                        "Juego: " + item.getJuego().getTitulo() +
-                                " | Cantidad: " + item.getCantidad() +
-                                " | Subtotal: " + subtotal);
-
-                escritor.newLine();
-
-                inventario.reducirStock(
-                        item.getJuego().getID(),
-                        item.getCantidad());
-            }
-
-            escritor.newLine();
-            escritor.write("TOTAL DE VENTA: " + total);
-            escritor.newLine();
-            escritor.write("----------------------------");
-            escritor.newLine();
-            escritor.newLine();
+            tarjeta = new Tarjeta(numero, titular, cvv, mes, año, 10000);
 
         } catch (Exception e) {
-            System.out.println("Error al guardar venta: " + e.getMessage());
+
+            System.out.println("Error en tarjeta: " + e.getMessage());
+            return;
         }
+
+        if (!tarjeta.validarTarjeta()) {
+
+            System.out.println("Tarjeta inválida");
+            return;
+        }
+
+        double total = carrito.calcularTotal();
+
+        if (!tarjeta.retirarDinero(total)) {
+
+            System.out.println("Fondos insuficientes");
+            return;
+        }
+        Cliente cliente = (Cliente) usuarioActivo;
+
+        Venta venta = new Venta(
+                cliente,
+                carrito.getItemsArray(),
+                total
+
+        );
+
+        int idVenta = ventaDAO.registrarVenta(venta);
+
+        if (idVenta == -1) {
+
+            System.out.println("Error al registrar venta");
+            return;
+        }
+
+        for (Item item : carrito.getItemsArray()) {
+
+            inventario.reducirStock(
+                    item.getJuego().getID(),
+                    item.getCantidad());
+        }
+
+        reporteVenta.generarReporteVenta();
+
+        reporteDia.generarReporteDia();
 
         carrito.limpiarCarrito();
+
+        System.out.println(Colores.VERDE + "Pago exitoso" + Colores.RESET);
+        System.out.println("ID Venta: " + idVenta);
+        System.out.println("Total: $" + total);
+        System.out.println("Saldo restante: $" + tarjeta.getSaldo());
     }
-
-    private void generarReporteDelDia() {
-
-        String archivo = "reporte_ventas.txt";
-
-        java.time.LocalDate hoy = java.time.LocalDate.now();
-
-        System.out.println(Colores.MORADO + "\n===== REPORTE DE VENTAS DEL DÍA =====" + Colores.RESET);
-        System.out.println("Fecha: " + hoy);
-        System.out.println("----------------------------");
-
-        try (java.io.BufferedReader lector = new java.io.BufferedReader(new java.io.FileReader(archivo))) {
-
-            String linea;
-            boolean incluirVenta = false;
-
-            while ((linea = lector.readLine()) != null) {
-
-                if (linea.startsWith("Fecha:")) {
-
-                    String fechaTexto = linea.replace("Fecha:", "").trim();
-
-                    java.time.LocalDate fechaVenta = java.time.LocalDate.parse(fechaTexto.substring(0, 10));
-
-                    incluirVenta = fechaVenta.equals(hoy);
-                }
-
-                if (incluirVenta) {
-                    System.out.println(linea);
-                }
-
-                if (linea.startsWith("----------------------------")) {
-                    incluirVenta = false;
-                }
-            }
-
-        } catch (Exception e) {
-            System.out.println("Error al generar reporte: " + e.getMessage());
-        }
-    }
-    private void mostrarVentas() {
-
-    System.out.println(
-            Colores.MORADO +
-            "\n========== HISTORIAL DE VENTAS ==========" +
-            Colores.RESET
-    );
-
-    String sql = """
-            SELECT 
-                v.idVenta,
-                v.fecha,
-                v.idCliente,
-                dv.idJuego,
-                dv.cantidad,
-                dv.precio
-            FROM Ventas v
-            INNER JOIN DetalleVenta dv
-                ON v.idVenta = dv.idVenta
-            ORDER BY v.fecha DESC
-            """;
-
-    try (Connection conn = DBConnection.getConnection();
-         PreparedStatement ps = conn.prepareStatement(sql);
-         ResultSet rs = ps.executeQuery()) {
-
-        boolean hayVentas = false;
-
-        while (rs.next()) {
-
-            hayVentas = true;
-
-            System.out.println(
-                    Colores.CYAN +
-                    "\nID Venta: " + rs.getInt("idVenta") +
-                    "\nCliente: " + rs.getString("idCliente") +
-                    "\nJuego: " + rs.getString("idJuego") +
-                    "\nCantidad: " + rs.getInt("cantidad") +
-                    "\nSubtotal: $" + rs.getDouble("precio") +
-                    "\nFecha: " + rs.getTimestamp("fecha") +
-                    "\n-----------------------------------" +
-                    Colores.RESET
-            );
-        }
-
-        if (!hayVentas) {
-
-            System.out.println(
-                    Colores.ROSA +
-                    "No hay ventas registradas" +
-                    Colores.RESET
-            );
-        }
-
-    } catch (SQLException e) {
-
-        System.out.println(
-                Colores.ROSA +
-                "Error al mostrar ventas: " +
-                e.getMessage() +
-                Colores.RESET
-        );
-    }
-}
 }

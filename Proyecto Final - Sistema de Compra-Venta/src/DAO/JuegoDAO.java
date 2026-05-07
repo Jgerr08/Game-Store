@@ -16,7 +16,7 @@ public class JuegoDAO {
         String sql = "INSERT INTO Juegos (id, titulo, consola, precio, stock, condicion) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, juego.getID());
             ps.setString(2, juego.getTitulo());
@@ -37,7 +37,7 @@ public class JuegoDAO {
         String sql = "SELECT * FROM Juegos WHERE id = ?";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, id);
 
@@ -58,18 +58,25 @@ public class JuegoDAO {
 
         List<Juego> lista = new ArrayList<>();
 
-        String sql = "SELECT * FROM Juegos ORDER BY titulo";
+        String sql = "SELECT id, titulo, consola, precio, stock, condicion FROM Juegos";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                lista.add(mapJuego(rs));
+                Juego juego = new Juego(
+                        rs.getString("id"),
+                        rs.getString("titulo"),
+                        Consola.valueOf(rs.getString("consola").toUpperCase()),
+                        rs.getDouble("precio"),
+                        rs.getInt("stock"),
+                        Condicion.valueOf(rs.getString("condicion").toUpperCase()));
+                lista.add(juego);
             }
 
         } catch (SQLException e) {
-            System.err.println("Error al listar juegos: " + e.getMessage());
+            System.out.println("Error: " + e.getMessage());
         }
 
         return lista;
@@ -80,7 +87,7 @@ public class JuegoDAO {
         String sql = "UPDATE Juegos SET stock = stock - ? WHERE id = ? AND stock >= ?";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, cantidad);
             ps.setString(2, id);
@@ -100,7 +107,7 @@ public class JuegoDAO {
         String sql = "UPDATE Juegos SET stock = stock + ? WHERE id = ?";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setInt(1, cantidad);
             ps.setString(2, id);
@@ -119,7 +126,7 @@ public class JuegoDAO {
         String sql = "DELETE FROM Juegos WHERE id = ?";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, id);
 
@@ -131,24 +138,25 @@ public class JuegoDAO {
 
         return false;
     }
+
     public boolean modificarPrecio(String id, double nuevoPrecio) {
 
-    String sql = "UPDATE Juegos SET precio = ? WHERE id = ?";
+        String sql = "UPDATE Juegos SET precio = ? WHERE id = ?";
 
-    try (Connection conn = DBConnection.getConnection();
-         PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBConnection.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
 
-        ps.setDouble(1, nuevoPrecio);
-        ps.setString(2, id);
+            ps.setDouble(1, nuevoPrecio);
+            ps.setString(2, id);
 
-        return ps.executeUpdate() > 0;
+            return ps.executeUpdate() > 0;
 
-    } catch (SQLException e) {
+        } catch (SQLException e) {
 
-        System.err.println("Error al modificar precio: " + e.getMessage());
-    }
+            System.err.println("Error al modificar precio: " + e.getMessage());
+        }
 
-    return false;
+        return false;
     }
 
     private Juego mapJuego(ResultSet rs) throws SQLException {
@@ -159,7 +167,6 @@ public class JuegoDAO {
                 Consola.valueOf(rs.getString("consola")),
                 rs.getDouble("precio"),
                 rs.getInt("stock"),
-                Condicion.valueOf(rs.getString("condicion"))
-        );
+                Condicion.valueOf(rs.getString("condicion")));
     }
 }

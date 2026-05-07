@@ -1,9 +1,6 @@
-===== REPORTE DE VENTA =====
-ID Venta: e5878ca8
-Fecha: 2026-05-05 08:54:58
+===== REPORTE GENERAL DE VENTAS =====
+-------------------------------------
 
-Juego: LEGO Star Wars | Cantidad: 1 | Subtotal: 500.0
-
-TOTAL DE VENTA: 500.0
-----------------------------
-
+-------------------------------------
+Total de ventas: 0
+Total generado: $0.0
