@@ -13,44 +13,61 @@ public class VentaDAO {
 
     public int registrarVenta(Venta venta) {
 
-    String sql = """
-        INSERT INTO Venta (fecha, idCliente, total)
-        OUTPUT INSERTED.id
-        VALUES (?, ?, ?)
-    """;
+        String sql = """
+                    INSERT INTO Venta (fecha, idCliente, total)
+                    OUTPUT INSERTED.id
+                    VALUES (?, ?, ?)
+                """;
 
-    try (Connection connection = DBConnection.getConnection();
-         PreparedStatement ps = connection.prepareStatement(sql)) {
+        try (Connection connection = DBConnection.getConnection();
+                PreparedStatement ps = connection.prepareStatement(sql)) {
 
-        ps.setTimestamp(1, Timestamp.valueOf(venta.getFecha()));
-        ps.setString(2, venta.getCliente().getId());
-        ps.setDouble(3, venta.getTotal());
+            ps.setTimestamp(1, Timestamp.valueOf(venta.getFecha()));
+            ps.setString(2, venta.getCliente().getId());
+            ps.setDouble(3, venta.getTotal());
 
-        ResultSet rs = ps.executeQuery();
+            ResultSet rs = ps.executeQuery();
 
-        if (rs.next()) {
+            int idVenta = -1;
 
-            int idVenta = rs.getInt(1);
+            if (rs.next()) {
+                idVenta = rs.getInt(1);
+            }
+
+            System.out.println("ID REAL: " + idVenta); // 🔥 DEBUG
+
+            if (idVenta <= 0) {
+                throw new SQLException("No se generó ID válido");
+            }
 
             guardarDetalle(connection, idVenta, venta.getItems());
 
             return idVenta;
+
+        } catch (SQLException e) {
+            System.err.println("Error al registrar venta: " + e.getMessage());
         }
 
-    } catch (SQLException e) {
-        System.err.println("Error al registrar venta: " + e.getMessage());
+        return -1;
     }
-
-    return -1;
-}
 
     private void guardarDetalle(Connection connection, int idVenta, List<Item> items) {
 
-        String sql = "INSERT INTO DetalleVenta (idVenta, idJuego, cantidad, precio) VALUES (?, ?, ?, ?)";
+        if (idVenta <= 0) {
+            throw new RuntimeException("ID de venta inválido: " + idVenta);
+        }
+
+        String sql = """
+                    INSERT INTO DetalleVenta (idVenta, idJuego, cantidad, precio)
+                    VALUES (?, ?, ?, ?)
+                """;
 
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
 
             for (Item item : items) {
+
+                System.out.println("Insertando -> Venta: " + idVenta +
+                        " Juego: " + item.getJuego().getID());
 
                 ps.setInt(1, idVenta);
                 ps.setString(2, item.getJuego().getID());
@@ -58,16 +75,15 @@ public class VentaDAO {
                 ps.setDouble(4, item.getSubtotal());
 
                 ps.addBatch();
-
-                juegoDAO.reducirStock(item.getJuego().getID(), item.getCantidad());
-                System.out.println(
-                    "Reduciendo stock -> Juego: " +
-                    item.getJuego().getID() +
-                    " | Cantidad: " + item.getCantidad()
-                    );
             }
 
             ps.executeBatch();
+
+            for (Item item : items) {
+                juegoDAO.reducirStock(
+                        item.getJuego().getID(),
+                        item.getCantidad());
+            }
 
         } catch (SQLException e) {
             System.err.println("Error al guardar detalle de venta: " + e.getMessage());
@@ -77,17 +93,17 @@ public class VentaDAO {
     public void mostrarVentas() {
 
         String sql = """
-                SELECT
-                    v.idVenta,
-                    v.fecha,
-                    v.idCliente,
-                    dv.idJuego,
-                    dv.cantidad,
-                    dv.precio
-                FROM Ventas v
-                INNER JOIN DetalleVenta dv
-                    ON v.idVenta = dv.idVenta
-                ORDER BY v.fecha DESC
+                    SELECT
+                        v.id,
+                        v.fecha,
+                        v.idCliente,
+                        dv.idJuego,
+                        dv.cantidad,
+                        dv.precio
+                    FROM Venta v
+                    INNER JOIN DetalleVenta dv
+                        ON v.id = dv.idVenta
+                    ORDER BY v.id DESC
                 """;
 
         try (Connection conn = DBConnection.getConnection();
@@ -103,7 +119,7 @@ public class VentaDAO {
 
                 hayVentas = true;
 
-                int idVenta = rs.getInt("idVenta");
+                int idVenta = rs.getInt("id");
 
                 if (idVenta != ventaActual) {
 
@@ -116,11 +132,14 @@ public class VentaDAO {
                     ventaActual = idVenta;
                 }
 
-                double subtotal = rs.getInt("cantidad") * rs.getDouble("precio");
+                int cantidad = rs.getInt("cantidad");
+                double precio = rs.getDouble("precio");
+
+                double subtotal = cantidad * precio;
 
                 System.out.println(
                         "Juego: " + rs.getString("idJuego") +
-                                " | Cantidad: " + rs.getInt("cantidad") +
+                                " | Cantidad: " + cantidad +
                                 " | Subtotal: $" + subtotal);
             }
 
@@ -129,8 +148,8 @@ public class VentaDAO {
             }
 
         } catch (SQLException e) {
-
             System.out.println("Error al mostrar ventas: " + e.getMessage());
         }
     }
+
 }

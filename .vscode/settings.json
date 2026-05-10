@@ -1,6 +1,17 @@
 {
-    "java.project.referencedLibraries": [
-        "lib/**/*.jar",
-        "c:\\Users\\hp\\AppData\\Local\\Microsoft\\Windows\\INetCache\\IE\\6L7OSA8Q\\mssql-jdbc-13.4.0.jre11[1].jar"
-    ]
+    "java.project.referencedLibraries": {
+        "include": [
+            "lib/**/*.jar",
+            "c:\\Users\\hp\\AppData\\Local\\Microsoft\\Windows\\INetCache\\IE\\6L7OSA8Q\\mssql-jdbc-13.4.0.jre11[1].jar",
+            "c:\\Users\\hp\\Downloads\\slf4j-api-2.0.9.jar",
+            "c:\\Users\\hp\\Downloads\\log4j-1.2.17.jar",
+            "c:\\Users\\hp\\Downloads\\layout-9.5.0.jar",
+            "c:\\Users\\hp\\Downloads\\kernel-9.5.0.jar",
+            "c:\\Users\\hp\\Downloads\\io-9.5.0.jar",
+            "c:\\Users\\hp\\Downloads\\commons-9.5.0.jar"
+        ],
+        "exclude": [
+            "c:\\Users\\hp\\Downloads\\slf4j-log4j13-1.0.1.jar"
+        ]
+    }
 }

@@ -1,6 +1,35 @@
 ===== REPORTE GENERAL DE VENTAS =====
 -------------------------------------
 
+? Venta ID: 18
+Cliente: jg
+Fecha: 2026-05-09 15:43:20.91
+   - Juego: LEGO Batman The VideoGame 360 | Cantidad: 1 | Subtotal: $200.0
+
+? Venta ID: 16
+Cliente: jg
+Fecha: 2026-05-09 15:33:13.423
+   - Juego: Kinect Adventures! | Cantidad: 1 | Subtotal: $150.0
+
+? Venta ID: 15
+Cliente: jg
+Fecha: 2026-05-08 08:21:03.543
+   - Juego: LEGO Star Wars The Complete Saga Xbox 360 | Cantidad: 1 | Subtotal: $300.0
+   - Juego: LEGO Batman The VideoGame 360 | Cantidad: 1 | Subtotal: $200.0
+
+? Venta ID: 14
+Cliente: jg
+Fecha: 2026-05-08 08:16:59.663
+   - Juego: LEGO Batman The VideoGame 360 | Cantidad: 1 | Subtotal: $200.0
+   - Juego: LEGO Star Wars The Complete Saga Xbox 360 | Cantidad: 1 | Subtotal: $300.0
+   - Juego: Kinect Sports Ultimate Collection | Cantidad: 1 | Subtotal: $250.0
+
+? Venta ID: 13
+Cliente: jg
+Fecha: 2026-05-08 07:48:30.813
+   - Juego: LEGO Star Wars The Complete Saga Xbox 360 | Cantidad: 1 | Subtotal: $300.0
+
 -------------------------------------
-Total de ventas: 0
-Total generado: $0.0
+Total de ventas: 5
+Total generado: $1900.0
+=====================================

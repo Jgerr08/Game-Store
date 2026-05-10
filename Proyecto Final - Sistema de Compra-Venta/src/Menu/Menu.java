@@ -266,7 +266,7 @@ public class Menu {
 
                     if (juego != null && juego.getStock() > 0) {
                         carrito.agregarJuego(juego);
-                        System.out.println(Colores.VERDE + "Agregado al carrito" + Colores.RESET);
+                        System.out.println(Colores.VERDE + juego.getTitulo()+" | "+juego.getPrecio() +" agregado al carrito" + Colores.RESET);
                     } else {
                         System.out.println(Colores.ROSA + "No disponible" + Colores.RESET);
                     }
@@ -357,11 +357,10 @@ public class Menu {
             System.out.println(Colores.VERDE + "3. Buscar juego" + Colores.RESET);
             System.out.println(Colores.VERDE + "4. Eliminar juego" + Colores.RESET);
             System.out.println(Colores.VERDE + "5. Aumentar stock" + Colores.RESET);
-            System.out.println(Colores.VERDE + "6. Reducir stock" + Colores.RESET);
-            System.out.println(Colores.VERDE + "7. Modificar precio" + Colores.RESET);
-            System.out.println(Colores.VERDE + "8. Ver usuarios" + Colores.RESET);
-            System.out.println(Colores.VERDE + "9. Eliminar usuario" + Colores.RESET);
-            System.out.println(Colores.VERDE + "10. Ver ventas" + Colores.RESET);
+            System.out.println(Colores.VERDE + "6. Modificar precio" + Colores.RESET);
+            System.out.println(Colores.VERDE + "7. Ver usuarios" + Colores.RESET);
+            System.out.println(Colores.VERDE + "8. Eliminar usuario" + Colores.RESET);
+            System.out.println(Colores.VERDE + "9. Ver ventas" + Colores.RESET);
             System.out.println(Colores.ROSA + "0. Cerrar sesión" + Colores.RESET);
 
             System.out.print(Colores.CYAN +
@@ -469,26 +468,8 @@ public class Menu {
 
                     }
 
+
                     case 6 -> {
-
-                        System.out.println(
-                                Colores.ROSA +
-                                        "\n=== REDUCIR STOCK ===" +
-                                        Colores.RESET);
-
-                        System.out.print("ID del juego: ");
-                        String id = scanner.nextLine();
-
-                        System.out.print("Cantidad a reducir: ");
-                        int cantidad = Integer.parseInt(scanner.nextLine());
-
-                        inventario.reducirStock(id, cantidad);
-
-                        System.out.println("Stock reducido correctamente");
-
-                    }
-
-                    case 7 -> {
 
                         System.out.println(
                                 Colores.CYAN +
@@ -518,7 +499,7 @@ public class Menu {
 
                     }
 
-                    case 8 -> {
+                    case 7 -> {
 
                         System.out.println(
                                 Colores.MORADO +
@@ -537,7 +518,7 @@ public class Menu {
                         }
                     }
 
-                    case 9 -> {
+                    case 8 -> {
 
                         System.out.println(
                                 Colores.ROSA +
@@ -571,7 +552,7 @@ public class Menu {
                         }
                     }
 
-                    case 10 -> {
+                    case 9 -> {
 
                         System.out.println(
                                 Colores.VERDE +
@@ -696,12 +677,6 @@ public class Menu {
             return;
         }
 
-        for (Item item : carrito.getItemsArray()) {
-
-            inventario.reducirStock(
-                    item.getJuego().getID(),
-                    item.getCantidad());
-        }
 
         reporteVenta.generarReporteVenta();
 

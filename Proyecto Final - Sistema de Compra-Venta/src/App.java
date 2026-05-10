@@ -6,6 +6,7 @@ import Juegos.Consola;
 import Juegos.Juego;
 import Menu.Menu;
 import Pago.PagoElectronico;
+import Reportes.reporteVenta;
 import Usuario.Cliente;
 import Usuario.Tecnico;
 import Usuario.*;
@@ -16,8 +17,9 @@ import Venta.Venta;
 
 public class App {
     public static void main(String[] args) throws Exception {
-
+      
       Menu menu = new Menu();
       menu.mostrarMenu();
+
     }
 }
