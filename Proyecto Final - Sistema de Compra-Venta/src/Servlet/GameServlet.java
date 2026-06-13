@@ -1,3 +1,5 @@
+package Servlet;
+import DAO.JuegoDAO;
 @WebServlet("/games")
 public class GameServlet extends HttpServlet {
 
