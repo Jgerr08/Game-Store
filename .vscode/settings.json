@@ -8,7 +8,14 @@
             "c:\\Users\\hp\\Downloads\\layout-9.5.0.jar",
             "c:\\Users\\hp\\Downloads\\kernel-9.5.0.jar",
             "c:\\Users\\hp\\Downloads\\io-9.5.0.jar",
-            "c:\\Users\\hp\\Downloads\\commons-9.5.0.jar"
+            "c:\\Users\\hp\\Downloads\\commons-9.5.0.jar",
+            "Proyecto Final - Sistema de Compra-Venta/lib/commons-9.5.0.jar",
+            "Proyecto Final - Sistema de Compra-Venta/lib/io-9.5.0.jar",
+            "Proyecto Final - Sistema de Compra-Venta/lib/kernel-9.5.0.jar",
+            "Proyecto Final - Sistema de Compra-Venta/lib/layout-9.5.0.jar",
+            "Proyecto Final - Sistema de Compra-Venta/lib/log4j-1.2.17.jar",
+            "Proyecto Final - Sistema de Compra-Venta/lib/mssql-jdbc-13.4.0.jre11.jar",
+            "Proyecto Final - Sistema de Compra-Venta/lib/slf4j-api-2.0.9.jar"
         ],
         "exclude": [
             "c:\\Users\\hp\\Downloads\\slf4j-log4j13-1.0.1.jar"
